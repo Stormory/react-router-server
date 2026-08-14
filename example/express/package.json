@@ -8,7 +8,7 @@
     "start": "react-router-server build/server/index.js"
   },
   "dependencies": {
-    "@stormory/react-router-server": "link:../..",
+    "@stormory/react-router-server": "^0.0.1",
     "express": "^5.2.1",
     "isbot": "5.2.1",
     "react": "19.2.8",

@@ -11,7 +11,7 @@
     "@nestjs/common": "^11.0.17",
     "@nestjs/core": "^11.0.1",
     "@nestjs/platform-express": "^11.1.11",
-    "@stormory/react-router-server": "link:../..",
+    "@stormory/react-router-server": "^0.0.1",
     "express": "^5.2.1",
     "isbot": "5.2.1",
     "react": "19.2.8",
