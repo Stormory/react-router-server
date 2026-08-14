@@ -1,0 +1,2 @@
+minimumReleaseAgeExclude:
+  - '@stormory/react-router-server@0.0.2'

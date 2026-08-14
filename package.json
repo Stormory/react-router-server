@@ -1,0 +1,91 @@
+{
+  "name": "@stormory/react-router-server",
+  "version": "0.0.1",
+  "description": "Use a custom server application as the React Router server entry in Vite",
+  "keywords": [
+    "express",
+    "fastify",
+    "koa",
+    "nestjs",
+    "react-router",
+    "server",
+    "vite",
+    "vite-plugin"
+  ],
+  "homepage": "https://github.com/stormory/react-router-server#readme",
+  "bugs": {
+    "url": "https://github.com/stormory/react-router-server/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stormory/react-router-server.git"
+  },
+  "bin": {
+    "react-router-server": "./bin/start"
+  },
+  "files": [
+    "bin",
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "check:type": "tsc --noEmit",
+    "fmt": "oxfmt --config oxfmt.config.ts",
+    "lint": "oxlint -c oxlint.config.ts",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "commander": "^15.0.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.0.0",
+    "express": "^5.2.1",
+    "lint-staged": "^17.0.7",
+    "oxfmt": "^0.53.0",
+    "oxlint": "^1.68.0",
+    "oxlint-tsgolint": "^0.23.0",
+    "tsdown": "^0.22.14",
+    "typescript": "^7.0.2",
+    "vite": "^8.0.0",
+    "vitest": "^4.0.0"
+  },
+  "peerDependencies": {
+    "@types/node": ">=22.12.0",
+    "vite": "^6.1.0 || ^7.0.0 || ^8.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@types/node": {
+      "optional": true
+    }
+  },
+  "simple-git-hooks": {
+    "pre-commit": "pnpm exec lint-staged --concurrent false"
+  },
+  "lint-staged": {
+    "*.{js,json}": [
+      "oxfmt --config oxfmt.config.ts"
+    ],
+    "*.{ts,tsx}": [
+      "oxfmt --config oxfmt.config.ts",
+      "oxlint src --fix --quiet --ignore-pattern '*.d.ts'"
+    ]
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}
