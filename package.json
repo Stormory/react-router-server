@@ -1,6 +1,6 @@
 {
   "name": "@stormory/react-router-server",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Use a custom server application as the React Router server entry in Vite",
   "keywords": [
     "express",
@@ -48,6 +48,7 @@
     "fmt": "oxfmt --config oxfmt.config.ts",
     "lint": "oxlint -c oxlint.config.ts",
     "test": "vitest run",
+    "release": "bumpp",
     "prepublish": "npm run build"
   },
   "dependencies": {
