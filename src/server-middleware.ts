@@ -3,6 +3,8 @@ import type * as http from 'node:http'
 import type { NodeMiddleware } from './node-middleware.js'
 import type { ReactRouterServerModule, ServerFramework } from './types.js'
 
+import { isFunction, isObject } from './utils.js'
+
 const INVALID_NEST_ADAPTER_MESSAGE = 'The Nest application must use an Express or Fastify HTTP adapter.'
 const FRAMEWORK_NAMES: Record<ServerFramework, string> = {
   express: 'Express',
@@ -76,7 +78,7 @@ export async function resolveServerApplication(
   framework: ServerFramework = 'express',
 ): Promise<ServerApplication> {
   const bootstrap = module.bootstrap
-  if (typeof bootstrap !== 'function') {
+  if (!isFunction(bootstrap)) {
     throw new TypeError(invalidEntryMessage(framework))
   }
 
@@ -112,7 +114,7 @@ async function resolveNestMiddleware(application: NestApplication): Promise<Node
   switch (adapter.getType()) {
     case 'express':
       assertMethods(adapterApplication, ['handle', 'use'], INVALID_NEST_ADAPTER_MESSAGE)
-      if (typeof adapterApplication !== 'function') {
+      if (!isFunction(adapterApplication)) {
         throw new TypeError(INVALID_NEST_ADAPTER_MESSAGE)
       }
       return adapterApplication as NodeMiddleware
@@ -145,14 +147,14 @@ function assertFrameworkApplication(
   const errorMessage = invalidEntryMessage(framework)
   switch (framework) {
     case 'express':
-      if (typeof application !== 'function') {
+      if (!isFunction(application)) {
         throw new TypeError(errorMessage)
       }
       assertMethods(application, ['handle', 'listen', 'use'], errorMessage)
       return
     case 'fastify':
       assertMethods(application, ['close', 'listen', 'ready', 'routing'], errorMessage)
-      if (typeof (application as Partial<FastifyApplication>).server !== 'object') {
+      if (!isObject((application as Partial<FastifyApplication>).server)) {
         throw new TypeError(errorMessage)
       }
       return
@@ -165,12 +167,12 @@ function assertFrameworkApplication(
 }
 
 function assertMethods(application: unknown, methods: string[], errorMessage: string): void {
-  if ((typeof application !== 'object' || application === null) && typeof application !== 'function') {
+  if (!isObject(application) && !isFunction(application)) {
     throw new TypeError(errorMessage)
   }
 
   const record = application as Record<string, unknown>
-  if (methods.some((method) => typeof record[method] !== 'function')) {
+  if (methods.some((method) => !isFunction(record[method]))) {
     throw new TypeError(errorMessage)
   }
 }

@@ -7,6 +7,7 @@ import type { FastifyApplication, ServerApplication } from './server-middleware.
 import type { ReactRouterServerModule, ServerFramework } from './types.js'
 
 import { resolveServerApplication } from './server-middleware.js'
+import { isFunction, isObject } from './utils.js'
 
 const DEFAULT_HOST = 'localhost'
 const DEFAULT_PORT = 3000
@@ -81,7 +82,7 @@ async function start(options: StartOptions): Promise<void> {
   const application = await loadServerApplication(options.entry, options.framework)
   const server = await startServerApplication(application, options)
   const address = server.address()
-  const port = typeof address === 'object' && address ? address.port : options.port
+  const port = isObject(address) ? address.port : options.port
 
   console.log(`Server listening on: http://${formatUrlHost(options.host)}:${port}`)
   installShutdownHandlers(application, server, options.framework)
@@ -117,12 +118,12 @@ function formatUrlHost(host: string): string {
 }
 
 function isHttpServer(candidate: unknown): candidate is http.Server {
-  if (typeof candidate !== 'object' || candidate === null) {
+  if (!isObject(candidate)) {
     return false
   }
 
   const server = candidate as Partial<http.Server>
-  return typeof server.address === 'function' && typeof server.close === 'function' && typeof server.once === 'function'
+  return isFunction(server.address) && isFunction(server.close) && isFunction(server.once)
 }
 
 function waitForListening(server: http.Server): Promise<void> {
