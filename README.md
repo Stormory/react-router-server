@@ -1,7 +1,6 @@
-# @stormory/react-router-server
+# React router server
 
-Use an Express, NestJS, Fastify, Koa, or Hono application as the server entry for a
-React Router Framework Mode app powered by Vite.
+Use an Express, NestJS, Fastify, Koa, or Hono application as the server entry for a React Router Framework Mode app powered by Vite.
 
 ## Install
 
@@ -10,8 +9,7 @@ pnpm add @stormory/react-router-server express
 pnpm add -D @react-router/dev vite
 ```
 
-Requires Node.js 22.12+, Vite 6.1–8, and React Router with SSR enabled. Replace
-Express with your chosen server framework when needed.
+Requires Node.js 22.12+, Vite 6.1–8, and React Router with SSR enabled. Replace Express with your chosen server framework when needed.
 
 ## Setup
 
@@ -86,8 +84,7 @@ Use the same `framework` value in Vite and the production CLI.
 | Hono      | Fetch handler from `app.fetch()`       | Managed Node server          | Native server |
 | Koa       | Request listener from `app.callback()` | `app.listen(port, host)`     | Native server |
 
-Nest entries return the Nest application itself. The plugin initializes and
-adapts it internally; do not return `app.getHttpAdapter().getInstance()`.
+Nest entries return the Nest application itself. The plugin initializes and adapts it internally; do not return `app.getHttpAdapter().getInstance()`.
 
 ```ts
 reactRouterServer({ framework: 'nest' })
@@ -118,14 +115,10 @@ pnpm start
 CLI syntax:
 
 ```sh
-react-router-server <server-entry> \
-  --framework=express \
-  --host=localhost \
-  --port=3000
+react-router-server <server-entry> --framework=express --host=localhost --port=3000
 ```
 
-The CLI calls the returned application's `listen()` method. It does not serve
-`build/client` automatically.
+The CLI calls the returned application's `listen()` method. It does not serve `build/client` automatically.
 
 ## Plugin options
 
@@ -136,16 +129,13 @@ The CLI calls the returned application's `listen()` method. It does not serve
 | `entryName`   | `src/main`    | Bundler entry name                             |
 | `environment` | `ssr`         | Vite server environment                        |
 
-The server build must emit `index.js`, React Router's default
-`serverBuildFile`.
+The server build must emit `index.js`, React Router's default `serverBuildFile`.
 
 ## API
 
 - `reactRouterServer(options?)` creates the Vite plugin.
-- `createWebRequest(request, response?)` converts a Node request to a Fetch API
-  `Request`.
-- `sendWebResponse(response, webResponse, headOnly?)` streams a Fetch API
-  `Response` to Node.
+- `createWebRequest(request, response?)` converts a Node request to a Fetch API `Request`.
+- `sendWebResponse(response, webResponse, headOnly?)` streams a Fetch API `Response` to Node.
 
 ## License
 
