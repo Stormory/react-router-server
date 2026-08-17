@@ -1,14 +1,15 @@
 import type * as http from 'node:http'
 
-import type { NodeMiddleware } from './node-middleware.js'
 import type { ReactRouterServerModule, ServerFramework } from './types.js'
 
+import { createWebRequest, type NodeMiddleware, sendWebResponse } from './node-middleware.js'
 import { isFunction, isObject } from './utils.js'
 
 const INVALID_NEST_ADAPTER_MESSAGE = 'The Nest application must use an Express or Fastify HTTP adapter.'
 const FRAMEWORK_NAMES: Record<ServerFramework, string> = {
   express: 'Express',
   fastify: 'Fastify',
+  hono: 'Hono',
   koa: 'Koa',
   nest: 'Nest',
 }
@@ -41,13 +42,22 @@ export interface FastifyApplication {
   server: http.Server
 }
 
+export interface HonoApplication {
+  fetch(request: Request): Promise<Response> | Response
+}
+
 interface KoaApplication {
   callback(): http.RequestListener
   listen(port: number, host: string): http.Server
   use(...parameters: unknown[]): unknown
 }
 
-export type ServerApplication = ExpressApplication | FastifyApplication | KoaApplication | NestApplication
+export type ServerApplication =
+  | ExpressApplication
+  | FastifyApplication
+  | HonoApplication
+  | KoaApplication
+  | NestApplication
 
 /** Load an application module and adapt it to Vite's Connect middleware API. */
 export function createServerModuleMiddleware(
@@ -60,10 +70,12 @@ export function createServerModuleMiddleware(
   return async (request, response, next) => {
     try {
       const module = await loadModule()
+
       if (module !== loadedModule || !middlewarePromise) {
         loadedModule = module
         middlewarePromise = resolveServerMiddleware(module, framework)
       }
+
       const middleware = await middlewarePromise
       await middleware(request, response, next)
     } catch (error) {
@@ -78,12 +90,14 @@ export async function resolveServerApplication(
   framework: ServerFramework = 'express',
 ): Promise<ServerApplication> {
   const bootstrap = module.bootstrap
+
   if (!isFunction(bootstrap)) {
     throw new TypeError(invalidEntryMessage(framework))
   }
 
   const application = await bootstrap()
   assertFrameworkApplication(application, framework)
+
   return application
 }
 
@@ -97,10 +111,16 @@ export async function resolveServerMiddleware(
   switch (framework) {
     case 'express':
       return application as ExpressApplication
+
     case 'fastify':
       return resolveFastifyMiddleware(application as FastifyApplication)
+
+    case 'hono':
+      return resolveHonoMiddleware(application as HonoApplication)
+
     case 'koa':
       return resolveKoaMiddleware(application as KoaApplication)
+
     case 'nest':
       return resolveNestMiddleware(application as NestApplication)
   }
@@ -108,6 +128,7 @@ export async function resolveServerMiddleware(
 
 async function resolveNestMiddleware(application: NestApplication): Promise<NodeMiddleware> {
   await application.init()
+
   const adapter = application.getHttpAdapter()
   const adapterApplication = adapter.getInstance()
 
@@ -130,6 +151,7 @@ async function resolveNestMiddleware(application: NestApplication): Promise<Node
 
 async function resolveFastifyMiddleware(application: FastifyApplication): Promise<NodeMiddleware> {
   await application.ready()
+
   return (request, response) => {
     application.routing(request, response)
   }
@@ -140,24 +162,39 @@ function resolveKoaMiddleware(application: KoaApplication): NodeMiddleware {
   return (request, response) => callback(request, response)
 }
 
+export function resolveHonoMiddleware(application: HonoApplication): NodeMiddleware {
+  return async (request, response) => {
+    const webResponse = await application.fetch(createWebRequest(request, response))
+    await sendWebResponse(response, webResponse, request.method === 'HEAD')
+  }
+}
+
 function assertFrameworkApplication(
   application: unknown,
   framework: ServerFramework,
 ): asserts application is ServerApplication {
   const errorMessage = invalidEntryMessage(framework)
+
   switch (framework) {
     case 'express':
       assertMethods(application, ['handle', 'listen', 'use'], errorMessage)
       return
+
     case 'fastify':
       assertMethods(application, ['close', 'listen', 'ready', 'routing'], errorMessage)
       if (!isObject((application as Partial<FastifyApplication>).server)) {
         throw new TypeError(errorMessage)
       }
       return
+
+    case 'hono':
+      assertMethods(application, ['fetch'], errorMessage)
+      return
+
     case 'koa':
       assertMethods(application, ['callback', 'listen', 'use'], errorMessage)
       return
+
     case 'nest':
       assertMethods(application, ['close', 'getHttpAdapter', 'init', 'listen'], errorMessage)
   }
@@ -169,6 +206,7 @@ function assertMethods(application: unknown, methods: string[], errorMessage: st
   }
 
   const record = application as Record<string, unknown>
+
   if (methods.some((method) => !isFunction(record[method]))) {
     throw new TypeError(errorMessage)
   }

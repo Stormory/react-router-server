@@ -1,6 +1,6 @@
 # @stormory/react-router-server
 
-Use an Express, NestJS, Fastify, or Koa application as the server entry for a
+Use an Express, NestJS, Fastify, Koa, or Hono application as the server entry for a
 React Router Framework Mode app powered by Vite.
 
 ## Install
@@ -83,6 +83,7 @@ Use the same `framework` value in Vite and the production CLI.
 | Express   | Connect middleware                     | `app.listen(port, host)`     | Native server |
 | NestJS    | Express or Fastify HTTP adapter        | `app.listen(port, host)`     | `app.close()` |
 | Fastify   | `app.ready()` and `app.routing()`      | `app.listen({ port, host })` | `app.close()` |
+| Hono      | Fetch handler from `app.fetch()`       | Managed Node server          | Native server |
 | Koa       | Request listener from `app.callback()` | `app.listen(port, host)`     | Native server |
 
 Nest entries return the Nest application itself. The plugin initializes and
@@ -128,12 +129,12 @@ The CLI calls the returned application's `listen()` method. It does not serve
 
 ## Plugin options
 
-| Option        | Default       | Description                            |
-| ------------- | ------------- | -------------------------------------- |
-| `framework`   | `express`     | `express`, `nest`, `fastify`, or `koa` |
-| `entry`       | `src/main.ts` | Server entry relative to the Vite root |
-| `entryName`   | `src/main`    | Bundler entry name                     |
-| `environment` | `ssr`         | Vite server environment                |
+| Option        | Default       | Description                                    |
+| ------------- | ------------- | ---------------------------------------------- |
+| `framework`   | `express`     | `express`, `nest`, `fastify`, `hono`, or `koa` |
+| `entry`       | `src/main.ts` | Server entry relative to the Vite root         |
+| `entryName`   | `src/main`    | Bundler entry name                             |
+| `environment` | `ssr`         | Vite server environment                        |
 
 The server build must emit `index.js`, React Router's default
 `serverBuildFile`.

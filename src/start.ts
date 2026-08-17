@@ -3,10 +3,10 @@ import * as http from 'node:http'
 import * as path from 'node:path'
 import { pathToFileURL } from 'node:url'
 
-import type { FastifyApplication, ServerApplication } from './server-middleware.js'
+import type { FastifyApplication, HonoApplication, ServerApplication } from './server-middleware.js'
 import type { ReactRouterServerModule, ServerFramework } from './types.js'
 
-import { resolveServerApplication } from './server-middleware.js'
+import { resolveHonoMiddleware, resolveServerApplication } from './server-middleware.js'
 import { isFunction, isObject } from './utils.js'
 
 const DEFAULT_HOST = 'localhost'
@@ -50,6 +50,10 @@ export async function startServerApplication(
   application: ServerApplication,
   options: Pick<StartOptions, 'framework' | 'host' | 'port'>,
 ): Promise<http.Server> {
+  if (options.framework === 'hono') {
+    return startHonoApplication(application as HonoApplication, options)
+  }
+
   if (options.framework === 'fastify') {
     const fastifyApplication = application as FastifyApplication
     await fastifyApplication.listen({ port: options.port, host: options.host })
@@ -60,7 +64,7 @@ export async function startServerApplication(
     return fastifyApplication.server
   }
 
-  const positionalApplication = application as Exclude<ServerApplication, FastifyApplication>
+  const positionalApplication = application as Exclude<ServerApplication, FastifyApplication | HonoApplication>
   const listenResult = positionalApplication.listen(options.port, options.host)
   const listening = isHttpServer(listenResult) ? waitForListening(listenResult) : undefined
   const server = await listenResult
@@ -107,10 +111,36 @@ function parsePort(value: string): number {
 }
 
 function parseFramework(value: string): ServerFramework {
-  if (value === 'express' || value === 'fastify' || value === 'koa' || value === 'nest') {
+  if (value === 'express' || value === 'fastify' || value === 'hono' || value === 'koa' || value === 'nest') {
     return value
   }
   throw new InvalidArgumentError(`invalid framework: ${value}`)
+}
+
+async function startHonoApplication(
+  application: HonoApplication,
+  options: Pick<StartOptions, 'host' | 'port'>,
+): Promise<http.Server> {
+  const middleware = resolveHonoMiddleware(application)
+  const server = http.createServer((request, response) => {
+    const onError = (error?: unknown) => {
+      if (error === undefined) {
+        return
+      }
+      if (response.headersSent) {
+        response.destroy(error instanceof Error ? error : new Error('Hono request failed', { cause: error }))
+        return
+      }
+      response.statusCode = 500
+      response.end('Internal Server Error')
+    }
+
+    void Promise.resolve(middleware(request, response, onError)).catch(onError)
+  })
+
+  server.listen(options.port, options.host)
+  await waitForListening(server)
+  return server
 }
 
 function formatUrlHost(host: string): string {

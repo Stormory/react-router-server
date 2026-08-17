@@ -41,6 +41,21 @@ describe('createStartCommand', () => {
     })
   })
 
+  test('accepts Hono as the application framework', async () => {
+    const action = vi.fn(async () => {})
+
+    await createStartCommand(action).parseAsync(['build/server/index.js', '--framework=hono'], {
+      from: 'user',
+    })
+
+    expect(action).toHaveBeenCalledWith({
+      entry: 'build/server/index.js',
+      framework: 'hono',
+      host: 'localhost',
+      port: 3000,
+    })
+  })
+
   test.each([
     [[], 'missing required argument'],
     [['entry.js', 'other.js'], 'too many arguments'],
@@ -152,6 +167,29 @@ export async function bootstrap() {
 
     expect(server).toBe(nativeServer)
     expect(application.listen).toHaveBeenCalledWith({ host: '127.0.0.1', port: 0 })
+  })
+
+  test('starts a Fetch-native Hono application with a Node server', async () => {
+    const application = {
+      fetch: vi.fn(async (request: Request) => {
+        return Response.json({ method: request.method, url: request.url })
+      }),
+    }
+
+    const server = await startServerApplication(application, {
+      framework: 'hono',
+      host: '127.0.0.1',
+      port: 0,
+    })
+    servers.push(server)
+    const { port } = server.address() as AddressInfo
+
+    const response = await fetch(`http://127.0.0.1:${port}/api/hello`)
+    await expect(response.json()).resolves.toEqual({
+      method: 'GET',
+      url: `http://127.0.0.1:${port}/api/hello`,
+    })
+    expect(application.fetch).toHaveBeenCalledOnce()
   })
 
   test('rejects a build without bootstrap', async () => {

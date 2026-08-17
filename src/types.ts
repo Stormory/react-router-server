@@ -2,7 +2,7 @@ export interface ReactRouterServerModule {
   bootstrap?: unknown
 }
 
-export type ServerFramework = 'express' | 'fastify' | 'koa' | 'nest'
+export type ServerFramework = 'express' | 'fastify' | 'hono' | 'koa' | 'nest'
 
 export interface ReactRouterServerPluginOptions {
   /** Server application module, relative to Vite's resolved root. */

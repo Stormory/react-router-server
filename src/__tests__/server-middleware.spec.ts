@@ -1,4 +1,4 @@
-import type { Server, ServerResponse } from 'node:http'
+import type { IncomingMessage, Server, ServerResponse } from 'node:http'
 
 import { describe, expect, test, vi } from 'vitest'
 
@@ -112,6 +112,44 @@ describe('resolveServerMiddleware', () => {
 
     expect(application.callback).toHaveBeenCalledOnce()
     expect(handler).toHaveBeenCalledWith(request, response)
+  })
+
+  test('adapts a Hono application through fetch()', async () => {
+    const application = {
+      fetch: vi.fn(async (request: Request) => {
+        return new Response(null, {
+          headers: { 'x-request-path': new URL(request.url).pathname },
+          status: 204,
+        })
+      }),
+    }
+    const middleware = await resolveServerMiddleware({ bootstrap: async () => application }, 'hono')
+    const request = {
+      complete: true,
+      destroyed: false,
+      headers: { host: 'localhost' },
+      method: 'GET',
+      once: vi.fn(),
+      rawHeaders: ['host', 'localhost'],
+      socket: {},
+      url: '/native',
+    } as unknown as IncomingMessage
+    const end = vi.fn()
+    const setHeader = vi.fn()
+    const response = {
+      end,
+      once: vi.fn(),
+      req: { httpVersionMajor: 1 },
+      setHeader,
+      writableEnded: false,
+    } as unknown as ServerResponse
+
+    await middleware(request, response, vi.fn())
+
+    expect(application.fetch).toHaveBeenCalledWith(expect.any(Request))
+    expect(response.statusCode).toBe(204)
+    expect(setHeader).toHaveBeenCalledWith('x-request-path', '/native')
+    expect(end).toHaveBeenCalledOnce()
   })
 
   test('rejects a Nest application with an unsupported HTTP adapter', async () => {

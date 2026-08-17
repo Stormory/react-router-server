@@ -5,6 +5,7 @@
   "keywords": [
     "express",
     "fastify",
+    "hono",
     "koa",
     "nestjs",
     "react-router",
