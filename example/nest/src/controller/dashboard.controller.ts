@@ -1,6 +1,6 @@
-import { Controller, Get, Next, Req, Res } from '@nestjs/common';
-import { createWebRequest, sendWebResponse } from '@stormory/react-router-server';
-import { createRequestHandler, RouterContextProvider } from 'react-router';
+import { Controller, Get, Next, Req, Res } from '@nestjs/common'
+import { createWebRequest, sendWebResponse } from '@stormory/react-router-server'
+import { createRequestHandler, RouterContextProvider } from 'react-router'
 
 const handleRequest = createRequestHandler(() => import('virtual:react-router/server-build'), import.meta.env.MODE)
 

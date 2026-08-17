@@ -1,11 +1,11 @@
+import { NestFactory } from '@nestjs/core'
 import express from 'express'
 import path from 'node:path'
-import { NestFactory } from '@nestjs/core';
 
-import { AppModule } from './app.module';
+import { AppModule } from './app.module'
 
 export async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule)
   const clientDirectory = path.resolve('build/client')
 
   // Static assets

@@ -42,6 +42,7 @@ export function createWebRequest(request: NodeRequest, response?: http.ServerRes
   for (let index = 0; index < request.rawHeaders.length; index += 2) {
     const name = request.rawHeaders[index]
     const value = request.rawHeaders[index + 1]
+
     if (name !== undefined && value !== undefined && !name.startsWith(':')) {
       headers.append(name, value)
     }

@@ -27,6 +27,7 @@ export function reactRouterServer(options: ReactRouterServerPluginOptions = {}):
     config(userConfig) {
       const root = path.resolve(userConfig.root ?? process.cwd())
       absoluteEntry = path.resolve(root, entry)
+
       const outDir =
         userConfig.environments?.[environmentName]?.build?.outDir ??
         path.join(userConfig.build?.outDir ?? 'dist', environmentName)
