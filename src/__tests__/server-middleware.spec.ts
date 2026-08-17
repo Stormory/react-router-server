@@ -134,7 +134,7 @@ describe('resolveServerMiddleware', () => {
     const application = createFastifyApplication()
 
     await expect(resolveServerMiddleware({ bootstrap: async () => application }, 'koa')).rejects.toThrow(
-      'returns a Koa application',
+      'returns Koa application',
     )
   })
 
@@ -143,7 +143,7 @@ describe('resolveServerMiddleware', () => {
   })
 
   test('rejects an unsupported bootstrap result', async () => {
-    await expect(resolveServerMiddleware({ bootstrap: vi.fn() })).rejects.toThrow('returns an Express application')
+    await expect(resolveServerMiddleware({ bootstrap: vi.fn() })).rejects.toThrow('returns Express application')
   })
 })
 

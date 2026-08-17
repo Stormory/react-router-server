@@ -147,9 +147,6 @@ function assertFrameworkApplication(
   const errorMessage = invalidEntryMessage(framework)
   switch (framework) {
     case 'express':
-      if (!isFunction(application)) {
-        throw new TypeError(errorMessage)
-      }
       assertMethods(application, ['handle', 'listen', 'use'], errorMessage)
       return
     case 'fastify':
@@ -178,6 +175,5 @@ function assertMethods(application: unknown, methods: string[], errorMessage: st
 }
 
 function invalidEntryMessage(framework: ServerFramework): string {
-  const article = framework === 'express' ? 'an' : 'a'
-  return `The server entry must export a "bootstrap" function that returns ${article} ${FRAMEWORK_NAMES[framework]} application.`
+  return `The server entry must export a "bootstrap" function that returns ${FRAMEWORK_NAMES[framework]} application.`
 }
