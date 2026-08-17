@@ -46,7 +46,8 @@
     "check:type": "tsc --noEmit",
     "fmt": "oxfmt --config oxfmt.config.ts",
     "lint": "oxlint -c oxlint.config.ts",
-    "test": "vitest run"
+    "test": "vitest run",
+    "prepublish": "npm run build"
   },
   "dependencies": {
     "commander": "^15.0.0"
@@ -54,6 +55,7 @@
   "devDependencies": {
     "@types/express": "^5.0.6",
     "@types/node": "^26.0.0",
+    "bumpp": "^12.2.1",
     "express": "^5.2.1",
     "lint-staged": "^17.0.7",
     "oxfmt": "^0.53.0",
